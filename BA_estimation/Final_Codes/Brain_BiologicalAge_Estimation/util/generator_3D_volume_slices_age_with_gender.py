@@ -42,13 +42,13 @@ def get_slice_group_3dimenstion(image=None, train_patch_size=[121, 145, 6], samp
 #Accepts a list of files of patients data and returns a tfrecord dataset
 def tfdata_generator_volume_chunks(file_lists, label_lists,label_gender, num_parallel_calls,train_patch_size, samples):
 
-    #Function for input normalization ( Zero mean and Unit variance)
+    #Function for input normalization ( Zero mean and Unit variance)label_cdr=[]
     def normalize_with_moments(x, axes=[0, 1, 2], epsilon=1e-8):
         mean, variance = tf.nn.moments(x, axes=axes)
         x_normed = (x - mean) / tf.sqrt(variance + epsilon)
         return x_normed
-    print(len(file_lists),len(label_lists),len(label_gender))
-    
+    print(len(file_lists),len(label_lists),len(label_gender))#,len(label_cdr))
+    # print(label_cdr)
     #file_lists contain list of tf_record files ie the MRI volumes (converted from dicom to tfrecord)
     #This now Creates a TFRecordDataset to read one or more TFRecord files
     
@@ -58,28 +58,43 @@ def tfdata_generator_volume_chunks(file_lists, label_lists,label_gender, num_par
     #Now the tf record files are stored in the form of as tf.Dataset
     
     #Creates a Dataset whose elements are slices of the given tensors. 
-    
+    print('#$^$#^$$^$^^$$^$^$^$$$##$')
+    # print(label_lists,len(label_lists),label_gender)
+    # print(f'label_gender before={label_gender}')
     labels = tf.data.Dataset.from_tensor_slices(label_lists)
+    # label_gender=feature_column.categorical_column_with_vocabulary_list('Gender',['M','F'])
+    # label_gender_one_hot = feature_column.indicator_column(label_gender)
+    # print(f'label_gender after={label_gender_one_hot}')
     
     gender = tf.data.Dataset.from_tensor_slices(label_gender)
-
+    # cdrs = tf.data.Dataset.from_tensor_slices(label_cdr)
     print(f'gender={gender}')
     print(f'labels={labels}')
-    
+    # print(f'cdrs={cdrs}')
 
     #Creates a Dataset by zipping together the given datasets.
     #That is merges a datset -Filenames with other datasets - gender,weight...
- 
+    #dataset structure will be {[filename1,gender1,weight1,height1,labels1], [filename2,gender2,weight2,height2,labels2],.....[filename400,gender400,weight400,height400,labels400]}
+    
+    # dataset = tf.data.Dataset.zip((filenames, gender,labels,cdrs))
     dataset = tf.data.Dataset.zip((filenames, gender,labels))
     print(dataset)
     
     #This transformation applies map_func to each element of this dataset, and returns a new dataset containing the transformed elements, in the same order as they appeared in the input.
     #This now applies a transformation function to convert the tfrecord dataset MRi volumes into actual MRI volumes
-    
+    #num_parallel_calls is the number of files that can read in parallel. The files are interleaved
+    # dataset = dataset.map(
+    #     map_func=lambda a, b, c, d: (convert_tf.parse_function_image(a), b, (tf.cast(c, tf.float32)),d),
+    #     num_parallel_calls=num_parallel_calls)
     dataset = dataset.map(
         map_func=lambda a, b, c: (convert_tf.parse_function_image(a), b, (tf.cast(c, tf.float32))),
         num_parallel_calls=num_parallel_calls)
-
+   ## July 2020
+    # if samples>1:
+    # if samples==1:
+    #     return dataset
+    #     print(f'chunking successful')
+    #     dataset = dataset.apply(tf.data.experimental.unbatch())
 
     get_slice_fn = lambda image: get_slice_group_3dimenstion(image, train_patch_size=train_patch_size, samples = samples)
 
@@ -89,7 +104,7 @@ def tfdata_generator_volume_chunks(file_lists, label_lists,label_gender, num_par
                                                 
                                                 ), num_parallel_calls=num_parallel_calls) #[d for _ in range(samples)],
     dataset = dataset.apply(tf.data.experimental.unbatch())
-    
+    # print(dir(dataset))
     
     return dataset
 
@@ -119,24 +134,24 @@ def batch_and_run(dataset_1, batch_size, count, case):
     iterator_all = dataset_choosed.__iter__()#make_one_shot_iterator()
     next_all = iterator_all.get_next()
 
-    #####Shashank Salian : removed tf1 session 
+    ### Shashank
     
     while True:
         try:
             
-            
+            # features, genders, labels,cdrs = next_all
             features, genders, labels = next_all
             next_all = iterator_all.get_next()
 
             features = np.expand_dims(features, -1)
 
-            yield [features, genders], labels 
+            yield [features, genders], labels #,cdrs
 
         except tf.errors.OutOfRangeError:
             print('Finished')
             break
     ###
-    # with tf.compat.v1.Session() as sess: 
+    # with tf.compat.v1.Session() as sess:
     #     while True:
     #         try:
     #             features, genders, labels = sess.run(next_all)
@@ -149,4 +164,43 @@ def batch_and_run(dataset_1, batch_size, count, case):
     #         except tf.errors.OutOfRangeError:
     #             print('Finished')
     #             break
+def batch_and_run_pytorch(dataset_1, batch_size, count, case):
 
+    if case == 'train':
+
+        dataset_choosed = dataset_1.shuffle(buffer_size=count)
+   
+    elif case == 'valid':
+    
+        dataset_choosed = dataset_1.shuffle(buffer_size=count)
+   
+    else:
+    
+        dataset_choosed = dataset_1
+
+    # Combines consecutive elements of this dataset into batches.
+    #Returns a dataset converted into batches
+    dataset_choosed = dataset_choosed.batch(batch_size=batch_size)
+   
+    dataset_choosed = dataset_choosed.repeat()
+    dataset_choosed = dataset_choosed.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+
+    #Once you have built a Dataset to represent your input data, the next step is to create an Iterator to access elements from that dataset
+    iterator_all = dataset_choosed.__iter__()#make_one_shot_iterator()
+    next_all = iterator_all.get_next()
+
+    ### Shashank
+    
+    while True:
+        try:
+            
+            features, genders, labels = next_all
+            next_all = iterator_all.get_next()
+
+            features = np.expand_dims(features, 0)
+
+            yield [features, genders], labels #,cdrs
+
+        except tf.errors.OutOfRangeError:
+            print('Finished')
+            break
