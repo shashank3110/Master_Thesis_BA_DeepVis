@@ -26,10 +26,10 @@ from tensorflow.keras.callbacks import (CSVLogger,\
     ReduceLROnPlateau,
     LearningRateScheduler
 )
-import SmoothGradCAMplusplus 
-from SmoothGradCAMplusplus.cam import CAM, GradCAM, GradCAMpp, SmoothGradCAMpp
-from SmoothGradCAMplusplus.utils.visualize import visualize, reverse_normalize
-from SmoothGradCAMplusplus.utils.imagenet_labels import label2idx, idx2label
+#import SmoothGradCAMplusplus 
+#from SmoothGradCAMplusplus.cam import CAM, GradCAM, GradCAMpp, SmoothGradCAMpp
+#from SmoothGradCAMplusplus.utils.visualize import visualize, reverse_normalize
+#from SmoothGradCAMplusplus.utils.imagenet_labels import label2idx, idx2label
 from tensorflow.keras.layers import *
 from tensorflow.keras import backend as K
 K.set_image_data_format = 'channels_last'
@@ -42,21 +42,24 @@ from tensorflow.compat.v1.keras.backend import set_session,clear_session,get_ses
 import util.generator_3D_volume_slices_age_with_gender as generator
 #import get_train_eval_files_oasis as get_train_eval_files
 import get_train_eval_files_multiple as get_train_eval_files
-import multi_gpu
+#import multi_gpu
 import numpy
 import gc
-from network import Hybrid3DCNN_gender_age_v2,Hybrid3DCNN_gender_age_v2_classification
+from network import Hybrid3DCNN_gender_age_v2,Hybrid3DCNN_gender_age_v2_classification,Hybrid3DCNN_oasis
 from datetime import datetime
 from skimage.transform import resize
-from vis_utils.visualize_cam import gradcam,smooth_gradcam_pp
+#from vis_utils.visualize_cam import gradcam,smooth_gradcam_pp
 
 print(tf.__version__)
 total_gpus=tf.config.experimental.list_physical_devices('GPU')
 print(f'total_gpus={total_gpus}')
-gpu=total_gpus[1]
+gpu=total_gpus[0]
 tf.config.experimental.set_visible_devices(gpu,'GPU')
-tf.config.experimental.set_memory_growth(gpu, True)
+#tf.config.experimental.set_memory_growth(gpu, True)
 
+#tf.config.experimental.set_virtual_device_configuration(
+ #       gpu,
+  #      [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=18000)])
 logical_gpus = tf.config.experimental.list_logical_devices('GPU')
 print(f'GPUs used = {logical_gpus}')
 #Use the below class only if you want to train on several GPUs
@@ -82,9 +85,9 @@ def train(cf,exp_name):
     #Choose the GPU on which the training should run    
     print(f'GPUs used = {logical_gpus}')
     # os.environ["CUDA_VISIBLE_DEVICES"] = str(cf['Training']['gpu_num'])
-    config = tf.compat.v1.ConfigProto() #config.experimental.ConfigProto()
-    #config.gpu_options.per_process_gpu_memory_fraction = 0.2
-    config.gpu_options.allow_growth = True
+    #config = tf.compat.v1.ConfigProto() #config.experimental.ConfigProto()
+    ##config.gpu_options.per_process_gpu_memory_fraction = 0.2
+    #config.gpu_options.allow_growth = True
     # set_session(tf.compat.v1.Session(graph=tf.compat.v1.get_default_graph(),config=config))
 
     train_data_path = cf['Paths']['train_tfrecord']
@@ -156,11 +159,11 @@ def train(cf,exp_name):
 
     print(f"classification flag={cf['Classification']}")
     if cf['Classification'] =='Y' : 
-        model,_ = Hybrid3DCNN_gender_age_v2_classification.createModel(input_size)
+        model,_ =  Hybrid3DCNN_gender_age_v2_classification.createModel(input_size)
         train_labels =  train_cdr #switch labels from age to cdr (regression to classification)
         eva_labels = eval_cdr
     else:
-        model,_ = Hybrid3DCNN_gender_age_v2.createModel(input_size)
+        model,_ = Hybrid3DCNN_oasis.createModel(input_size)  #Hybrid3DCNN_gender_age_v2.createModel(input_size)
 
     
     #Uncomment the below command in case of using multiple GPUs
@@ -585,9 +588,9 @@ def data_preprocess(cf):
     shutil.copy(cf['Paths']['config'], os.path.join(cf['Paths']['save'], 'config_Age.yml'))
 
     shutil.copy('./util/generator_3D_volume_slices_age_with_gender.py', os.path.join(cf['Paths']['save'], 'generator.py'))
-    shutil.copy('./get_train_eval_files_gender.py', os.path.join(cf['Paths']['save'], 'get_train_eval_files.py'))
-    shutil.copy('./network/Hybrid3DCNN_gender_age_v2.py', os.path.join(cf['Paths']['save'], 'network.py'))
-
+    shutil.copy('./get_train_eval_files_multiple.py', os.path.join(cf['Paths']['save'], 'get_train_eval_files.py'))
+    #shutil.copy('./network/Hybrid3DCNN_gender_age_v2.py', os.path.join(cf['Paths']['save'], 'network.py'))
+    shutil.copy('./network/Hybrid3DCNN_oasis.py', os.path.join(cf['Paths']['save'], 'network.py'))
     # Extend the configuration file with new entries
     with open(os.path.join(cf['Paths']['save'], 'config_Age.yml'), "w") as ymlfile:
         yaml.dump(cf, ymlfile)
@@ -673,6 +676,7 @@ def data_preprocess(cf):
 
         
     
+'''
 def visualize_test(cf, exp_name,vis_name='gcam'):
     test_label_path = cf['Paths']['labels']
     df = pd.read_csv(test_label_path)
@@ -789,7 +793,7 @@ def visualize_test(cf, exp_name,vis_name='gcam'):
         #     print('Finished')
         #     break
     return
-
+'''
     #***************  
 
 
@@ -819,7 +823,10 @@ if __name__ == '__main__':
                         type=str,
                         default=None,
                         help='Name of experiment')
-
+    parser.add_argument('-m', '--mode',
+                        type=str,
+                        default='train',
+                        help='Run mode train/test')
     #Adding an argument to specify vis technique
     parser.add_argument('-v', '--vis_name',
                         type=str,
@@ -864,7 +871,7 @@ if __name__ == '__main__':
     
     # cf['Paths']['vis'] = os.path.join( os.getcwd(),'exp/' + arguments.exp_name+'/'+arguments.vis_name+'_vis3')#gradcam_vis_results
     # create folder to store training results
-
+    cf['Case'] = arguments.mode
     if cf['Case'] == "train":
         data_preprocess(cf)
         train(cf,arguments.exp_name)

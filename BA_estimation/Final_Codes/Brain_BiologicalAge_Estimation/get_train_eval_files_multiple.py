@@ -133,8 +133,8 @@ def encode_cdrs(test_cdr):
 
     # cdr_encoded = cdr_one_hot.values
 
-    # cdr_ohe_dict={0:[1.0,0.0,0.0,0.0],0.5:[0.0,1.0,0.0,0.0],1:[0.0,0.0,1.0,0.0],2:[0.0,0.0,0.0,1.0]}
-    cdr_ohe_dict={0:[1.0,0.0,0.0],0.5:[0.0,1.0,0.0],1:[0.0,0.0,1.0]}#if training without cdr2
+    cdr_ohe_dict={0:[1.0,0.0,0.0,0.0],0.5:[0.0,1.0,0.0,0.0],1:[0.0,0.0,1.0,0.0],2:[0.0,0.0,0.0,1.0]}
+    #cdr_ohe_dict={0:[1.0,0.0,0.0],0.5:[0.0,1.0,0.0],1:[0.0,0.0,1.0]}#if training without cdr2
     cdr_encoded = [cdr_ohe_dict[cdr] for cdr in test_cdr]
 
     return cdr_encoded

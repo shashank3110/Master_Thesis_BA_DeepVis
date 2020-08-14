@@ -51,9 +51,9 @@ K.set_image_data_format = 'channels_last'
 print(tf.__version__)
 total_gpus=tf.config.experimental.list_physical_devices('GPU')
 print(f'total_gpus={total_gpus}')
-gpu=total_gpus[1]
+gpu=total_gpus[0]
 tf.config.experimental.set_visible_devices(gpu,'GPU')
-tf.config.experimental.set_memory_growth(gpu, True)
+#tf.config.experimental.set_memory_growth(gpu, True)
 
 logical_gpus = tf.config.experimental.list_logical_devices('GPU')
 print(f'GPUs used = {logical_gpus}')
@@ -64,11 +64,11 @@ print(f'GPUs used = {logical_gpus}')
 import util.generator_3D_volume_slices_age_with_gender as generator
 # import get_train_eval_files_Bio as get_train_eval_files
 import get_train_eval_files_multiple as get_train_eval_files
-import evaluation_plot
-import multi_gpu
+#import evaluation_plot
+#import multi_gpu
 import numpy
 import gc
-from network import Hybrid3DCNN_gender_age_v2,Hybrid3DCNN_gender_age_v2_classification
+from network import Hybrid3DCNN_gender_age_v2,Hybrid3DCNN_oasis #,Hybrid3DCNN_gender_age_v2_classification
 # from network import Final_3D_volume_slice1
 # from SpectralNormalizationKeras import DenseSN, ConvSN1D, ConvSN2D, ConvSN3D
 # from dense import DenseNet
@@ -93,19 +93,21 @@ class ModelMGPU(Model):
 
 def train(cf):
     
-	print(f'GPUs used = {logical_gpus}')
+    print(f'GPUs used = {logical_gpus}')
     
-    config = tf.compat.v1.ConfigProto()
-    config.gpu_options.allow_growth = True
+    #config = tf.compat.v1.ConfigProto()
+    #config.gpu_options.allow_growth = True
 
-    train_path = cf['Paths']['train_tfrecord']
+    #train_path = cf['Paths']['train_tfrecord']
     train_eval_ratio = cf['Data']['train_val_split']
     batch_size = cf['Training']['batch_size']
     image_shape = cf['Training']['image_shape']
     num_parallel_calls = cf['Training']['num_parallel_calls']
     epoch = cf['Training']['num_epochs']
     unhealthy_path = cf['Paths']['unhealthy']+ '/'+ cf['Paths']['exp']
-    
+    train_data_path = cf['Paths']['train_tfrecord']
+    train_label_path = cf['Paths']['labels']
+    samples = cf['Training']['samples']
     #This variable is initially set to True to start the iteration process.
     continueTraining = True
    
@@ -115,10 +117,8 @@ def train(cf):
     while(continueTraining):
         
         counter = counter + 1
-       
-
     	#################### new code ######################
-    	K.clear_session()
+        K.clear_session()
 
     	##########################################
         #Divide the entire dataset into training and validation set
@@ -173,8 +173,8 @@ def train(cf):
 
         #Create the model with the shape of the input
         input_size = image_shape + [1]
-        model,_ = Hybrid3DCNN_gender_age_v2.createModel(input_size)
-
+        #model,_ = Hybrid3DCNN_gender_age_v2.createModel(input_size)
+        model,_ = Hybrid3DCNN_oasis.createModel(input_size)
         #Uncomment the below command in case of using multiple GPUs
         #model = ModelMGPU(model, 2)
         
@@ -198,13 +198,13 @@ def train(cf):
         def get_callbacks(model_file, logging_file):
             callbacks = list()
             #Save the model
-            callbacks.append(cb.ModelCheckpoint(model_file, monitor='val_mean_absolute_error', save_best_only=True, mode='min'))
+            callbacks.append(cb.ModelCheckpoint(model_file, monitor='val_mae', save_best_only=True, mode='min'))
             #Save the log file
             callbacks.append(CSVLogger(logging_file, append=True))
             #Reduce LR on plateau
-            callbacks.append(ReduceLROnPlateau(monitor='val_mean_absolute_error', factor=0.2, patience=12, min_lr=1e-7))
+            callbacks.append(ReduceLROnPlateau(monitor='val_mae', factor=0.2, patience=12, min_lr=1e-7))
             #Stop training in case of validation error increase
-            callbacks.append(EarlyStopping(monitor='val_mean_absolute_error', min_delta=0.005, patience=18, verbose=0, mode='auto', baseline=None, restore_best_weights=False))
+            callbacks.append(EarlyStopping(monitor='val_mae', min_delta=0.005, patience=18, verbose=1, mode='auto', baseline=None, restore_best_weights=False))
 
             return callbacks
 
@@ -217,7 +217,9 @@ def train(cf):
         train_generator = generator.tfdata_generator_volume_chunks(file_lists=train_patients,
                                                                           label_lists=train_labels,
                                                                           label_gender=train_labels_gender,
-                                                                          num_parallel_calls=num_parallel_calls,
+                                                                          num_parallel_calls=num_parallel_calls,\
+                                                                          train_patch_size = image_shape,\
+                                                                          samples = samples
 
                                                                           )
 
@@ -227,8 +229,9 @@ def train(cf):
         val_generator = generator.tfdata_generator_volume_chunks(file_lists=eva_patients,
                                                                         label_lists=eva_labels,
                                                                         label_gender=eva_labels_gender,
-                                                                        num_parallel_calls=num_parallel_calls,
-
+                                                                        num_parallel_calls=num_parallel_calls,\
+                                                                        train_patch_size = image_shape,
+                                                                        samples = samples
                                                                         )
 
 
@@ -238,33 +241,33 @@ def train(cf):
         logging_file = os.path.join(cf['Paths']['model'] , "age_net_oasis1_3.txt")
 
         #Start training the model
-        res = model.fit_generator(
+        res = model.fit(
               train_generator,
               steps_per_epoch=steps_per_epoch,
               epochs = epoch,
               validation_data=val_generator,
               validation_steps=validata_steps,
               callbacks=get_callbacks(model_file=path_w, logging_file=logging_file))
-    
+        print(f'training history={res.history}')
         #After training the model, reset the Keras session in order to do inference on the validation set
-        
-        reset_keras()
+        #used k.clear_session() at loop start instead of old reset_keras()
+        #### reset_keras()
         
         batch_size = 10
         
         count_validation = len(eva_patients) * 20
         
         validata_steps = math.ceil(count_validation / batch_size)
-        val_generator = generator.tfdata_generator_volume_chunks(file_lists=eva_patients,
-                                                                        label_lists=eva_labels,
-                                                                        label_gender=eva_labels_gender,
-                                                                        num_parallel_calls=num_parallel_calls,
+        #val_generator = generator.tfdata_generator_volume_chunks(file_lists=eva_patients,
+         #                                                               label_lists=eva_labels,
+          #                                                              label_gender=eva_labels_gender,
+           #                                                             num_parallel_calls=num_parallel_calls,
 
-                                                                        )
+            #                                                            )
 
 
 
-        val_generator = generator.batch_and_run(val_generator, batch_size, count_validation, case='valid')
+        #val_generator = generator.batch_and_run(val_generator, batch_size, count_validation, case='valid')
 
         model = tf.keras.models.load_model(filepath=cf['Pretrained_Model']['path'], compile=False)
         
@@ -654,7 +657,7 @@ def test(cf):
     data1.drop(columns=['index'], inplace=True)
     
     
-    data1.to_csv('/home/d1308/no_backup/d1308/3T_Brain_age_regression/exp/FinalBioValid/model/unhealthy_data_valid.csv')
+    data1.to_csv(cf['Paths']['model'] +'/unhealthy_data_valid.csv')
     
     def rmse_test(predictions, targets):
         return np.sqrt(((predictions - targets) ** 2).mean())
@@ -728,14 +731,14 @@ def data_preprocess(cf):
     print(' Local saving directory : ' + cf['Paths']['save'])
 
     # Copy train script and configuration file (make experiment reproducible)
-    shutil.copy(os.path.basename(sys.argv[0]), os.path.join(cf['Paths']['save'], 'train.py'))
+    shutil.copy(base_path+os.path.basename(sys.argv[0]), os.path.join(cf['Paths']['save'], 'train.py'))
 
     shutil.copy(cf['Paths']['config'], os.path.join(cf['Paths']['save'], 'config_Age.yml'))
 
-    shutil.copy('./util/generator_3D_volume_slices.py', os.path.join(cf['Paths']['save'], 'generator.py'))
-    shutil.copy('./get_train_eval_files_multiple.py', os.path.join(cf['Paths']['save'], 'get_train_eval_files.py'))
-    shutil.copy('./network/Final_3D_volume_slice.py', os.path.join(cf['Paths']['save'], 'network.py'))
-
+    shutil.copy(base_path+'util/generator_3D_volume_slices_age_with_gender.py', os.path.join(cf['Paths']['save'], 'generator.py'))
+    shutil.copy(base_path+'get_train_eval_files_multiple.py', os.path.join(cf['Paths']['save'], 'get_train_eval_files.py'))
+    #shutil.copy(base_path+'network/Hybrid3DCNN_gender_age_v2.py', os.path.join(cf['Paths']['save'], 'network.py'))
+    shutil.copy(base_path+'./network/Hybrid3DCNN_oasis.py', os.path.join(cf['Paths']['save'], 'network.py'))
     # Extend the configuration file with new entries
     with open(os.path.join(cf['Paths']['save'], 'config_Age.yml'), "w") as ymlfile:
         yaml.dump(cf, ymlfile)
@@ -745,11 +748,12 @@ if __name__ == '__main__':
     #The argparse module makes it easy to write user-friendly command-line interfaces
     #first step in using the argparse is creating an ArgumentParser object
     parser = argparse.ArgumentParser(description='BioAgeNet training')
-
+    base_path='/usrhomes/g009/shashanks/Master_Thesis_BA_DeepVis/BA_estimation/Final_Codes/Brain_BiologicalAge_Estimation/'
+    sys.path.append('/usrhomes/g009/shashanks/Master_Thesis_BA_DeepVis/BA_estimation/Final_Codes/Brain_BiologicalAge_Estimation/')
     #Adding an argument to specify the path of the configuration file
     parser.add_argument('-c', '--config_path',
                         type=str,
-                        default='config/config_Age_3D.yml',
+                        default=base_path+'config/config_Age_3D.yml',
                         help='Configuration file')
     #Adding an argument to specify name of the experiment
     parser.add_argument('-e', '--exp_name',
@@ -760,7 +764,7 @@ if __name__ == '__main__':
     #This will inspect the command line, convert each argument to the appropriate type and then invoke the appropriate action
     arguments = parser.parse_args()
 
-    arguments.config_path = "config/config_Age_3D.yml"
+    arguments.config_path = base_path+"config/config_Age_3D.yml"
 
     assert arguments.config_path is not None, 'Please provide a configuration path using' \
                                               ' -c pathname in the command line.'
@@ -773,7 +777,7 @@ if __name__ == '__main__':
 
     # Set paths (Does snot create the directory but just updates the paths in the config file)
     #Inside the Paths section, creates a new save path under the given experimentname
-    cf['Paths']['save'] = 'exp/' + arguments.exp_name
+    cf['Paths']['save'] = base_path+'exp/' + arguments.exp_name
     #Creates a directory model to save the model
     cf['Paths']['model'] = os.path.join(cf['Paths']['save'], 'model/')
     
