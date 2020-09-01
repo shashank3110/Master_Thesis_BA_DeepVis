@@ -51,7 +51,7 @@ K.set_image_data_format = 'channels_last'
 print(tf.__version__)
 total_gpus=tf.config.experimental.list_physical_devices('GPU')
 print(f'total_gpus={total_gpus}')
-gpu=total_gpus[0]
+gpu=total_gpus #[0]
 tf.config.experimental.set_visible_devices(gpu,'GPU')
 #tf.config.experimental.set_memory_growth(gpu, True)
 
@@ -123,7 +123,7 @@ def train(cf):
     	##########################################
         #Divide the entire dataset into training and validation set
         # train_patient, train_labels, train_labels_gender, eva_files, eva_labels, eva_labels_gender = get_train_eval_files.prepare_train_eval_files(train_path, train_eval_ratio)
-        train_patients,train_labels, train_labels_gender, train_cdr, train_scan_ids,eva_patients,eva_labels, eva_labels_gender,eval_cdr,eval_scan_ids \
+        train_patients,train_labels, train_labels_gender, train_cdr, train_scan_ids,train_ids,eva_patients,eva_labels, eva_labels_gender,eval_cdr,eval_scan_ids,eval_ids \
          = get_train_eval_files.prepare_train_eval_files(train_label_path,train_data_path, train_eval_ratio)
 
         total_patient_name1 = []
@@ -258,16 +258,17 @@ def train(cf):
         count_validation = len(eva_patients) * 20
         
         validata_steps = math.ceil(count_validation / batch_size)
-        #val_generator = generator.tfdata_generator_volume_chunks(file_lists=eva_patients,
-         #                                                               label_lists=eva_labels,
-          #                                                              label_gender=eva_labels_gender,
-           #                                                             num_parallel_calls=num_parallel_calls,
+        val_generator = generator.tfdata_generator_volume_chunks(file_lists=eva_patients,
+                                                                        label_lists=eva_labels,
+                                                                        label_gender=eva_labels_gender,
+                                                                        num_parallel_calls=num_parallel_calls,\
+                                                                        train_patch_size=image_shape,
+                                                                        samples=samples
+                                                                        )
 
-            #                                                            )
 
 
-
-        #val_generator = generator.batch_and_run(val_generator, batch_size, count_validation, case='valid')
+        val_generator = generator.batch_and_run(val_generator, batch_size, count_validation, case='valid')
 
         model = tf.keras.models.load_model(filepath=cf['Pretrained_Model']['path'], compile=False)
         
@@ -294,18 +295,23 @@ def train(cf):
         slice_min = []
         max_deviation_list = []
         
+        #try:
         #Calculate the predictions for each patient as an average of 10 volume chunks
+        print(f'len age_prediction ={len(age_prediction)} and len total patients={len(total_patient_name)} ')
         for i in range(len(eva_labels)):
 
             predicted_age_patient = []
             deviation_list = []
-            
+            print(i,total_patient_name[i])
             for k in range(10):
-   
+              try:
+                print(k,i, k+5+20*i)
                 deviation = abs(age_prediction[(k+5) + (20 * i)] - eva_labels[i])
                 deviation_list.append(deviation)  
                 predicted_age_patient.append(age_prediction[(k+5) + (20 * i)])
-            
+              except Exception as e:
+                print(f'Exception=:{e}')
+                pass
             print('Details of patient {}'.format(total_patient_name[i]))
             print('The deviations of patient are :', deviation_list)
             
@@ -343,8 +349,8 @@ def train(cf):
             slice_min.append(index_min)
             print('\n')
             
-            total_predicted_age_regresion.append(predicted_age)
-            
+            total_predicted_age_regresion.append(predicted_age)  
+    
         print('The validation patients are:')
         print(total_patient_name)
         print('\n')
@@ -431,7 +437,7 @@ def train(cf):
             
             #Outlier Detection
             unhealthy_list = []
-        
+            #try:
             #For every patient in the validation set, check if it is a outlier
             for i in range(len(eva_labels)):
                 
@@ -439,9 +445,9 @@ def train(cf):
                 setFlag = False
                 
                 print('Checking patient:',total_patient_name[i])
-                
-                for k in range(10):
-                         
+                try:
+                  for k in range(10):
+                    print(k,i,k+5+20*i)
                     diff = abs(age_prediction[(k+5) + (20 * i)] - eva_labels[i])
                     diff_list.append(diff)
                     
@@ -452,7 +458,9 @@ def train(cf):
                         print('The value which exceeded threshold is', diff)
                         print('The slice which exceeded threshold is', (k+5))
                         setFlag = True
-                                
+                except Exception as e:
+                  print(f'Exception: {e}')
+                  pass       
                 print('Deviation list is', diff_list)
 
                 mean_diff = numpy.mean(diff_list)
@@ -475,8 +483,7 @@ def train(cf):
                 elif(setFlag):
                         print('Only max deviation of slice exceeded')
                         print('Patient is healthy')
-                        print('\n')
-                      
+                        print('\n')      
 
             # List of unhealthy patients
             print('Length of unhealthy patients :', len(unhealthy_list))
@@ -491,10 +498,10 @@ def train(cf):
             if len(unhealthy_list) > 0:
                 
                 for unhealthy_patient in unhealthy_list:
-                   
-                    unhealthy_patient = unhealthy_patient + '.tfrecord'
+                    unhealthy_patient_name = unhealthy_patient.split('_')[0]
+                    unhealthy_patient = unhealthy_patient_name +'/'+ unhealthy_patient + '.tfrecord'
                     print('moving: ',unhealthy_patient)
-                    shutil.move(os.path.join(train_path, unhealthy_patient), unhealthy_path)
+                    shutil.move(os.path.join(train_data_path, unhealthy_patient), unhealthy_path)
                 
                 continueTraining = True
                 print('Reiterating...', counter+1)

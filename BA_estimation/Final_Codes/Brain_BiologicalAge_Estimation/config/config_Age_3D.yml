@@ -32,11 +32,11 @@ Data:
 
 Pretrained_Model:
     # weights of a pretrained network
-    path : /usrhomes/g009/shashanks/Master_Thesis_BA_DeepVis/BA_estimation/Final_Codes/Brain_BiologicalAge_Estimation/exp/exp2.1/model/age_net_oasis1_3.hdf5 
+    path : /usrhomes/g009/shashanks/Master_Thesis_BA_DeepVis/BA_estimation/Final_Codes/Brain_BiologicalAge_Estimation/exp/exp2.2/model/age_net_oasis1_3.hdf5 
 #'/home/raarmak1/.shashanks/BA_estimation/Final_Codes/Brain_BiologicalAge_Estimation/exp/exp2/model/age_net_oasis1_3.hdf5' 
 
 Training:
-    batch_size : 8 #4
+    batch_size : 16 #4
     samples : 20 # No of volume chunks
     image_shape: [121, 145, 6] # for mean slices  #[121, 145, 6]   #Image shape to be fed into the model
     gpu_num : 2

@@ -101,7 +101,7 @@ def prepare_train_eval_files(label_path,data_path, train_eval_ratio):
     # eval_labels = [data[data['MRI ID']==id.split('.')[0]]['Age'] for id in eval_ids]  
     # train_gender = [data[data['MRI ID']==id.split('.')[0]]['M/F'] for id in train_ids]  
     # eval_gender = [data[data['MRI ID']==id.split('.')[0]]['M/F'] for id in eval_ids]  
-    return train_patients,train_labels,train_gender,train_cdr,train_scan_ids,eval_patients, eval_labels,eval_gender,eval_cdr,eval_scan_ids
+    return train_patients,train_labels,train_gender,train_cdr,train_scan_ids,train_ids,eval_patients, eval_labels,eval_gender,eval_cdr,eval_scan_ids,eval_ids
 
 def get_test_files(label_path,data_path):
 
