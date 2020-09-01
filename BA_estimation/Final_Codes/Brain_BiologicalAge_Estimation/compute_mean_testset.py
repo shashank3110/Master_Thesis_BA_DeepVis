@@ -64,7 +64,6 @@ import os
 
 
 
-
 def get_selected_scan_from_subjects(data_path,subject_ids,label_df,selected_scans):
     scans=[]
     labels=[]
@@ -80,10 +79,9 @@ def get_selected_scan_from_subjects(data_path,subject_ids,label_df,selected_scan
     for subject in subject_ids :
     	if subject in list1:
     		path=os.path.join(path1,subject)
-        elif subject in list2:
+    	elif subject in list2:
         	path=os.path.join(path2,subject)
         paths=os.listdir(path)
-
         ids.extend([scan_id.split('.')[0] for scan_id in paths  if scan_id.split('/')[-1].split('.')[0] in selected_scans ])
         scans.extend([ os.path.join(path,scan_id) for scan_id in paths   if scan_id.split('/')[-1].split('.')[0] in selected_scans ])
         
