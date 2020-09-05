@@ -36,21 +36,12 @@ from random import shuffle
 from skimage.transform import resize
 import skimage.io as sio
 from scipy.io import savemat,loadmat
-import cv2
-
-import mask
-import draw
-import norm
-import misc
-
 from torchvision import models
 
 from random import shuffle
 from torchvision.utils import make_grid, save_image
 
 import pandas as pd
-from gradcam.utils import visualize_cam
-from gradcam import GradCAMpp, GradCAM
 from matplotlib import pyplot as plt
 """#**Read Nii images code**"""
 
@@ -71,25 +62,22 @@ def get_selected_scan_from_subjects(data_path,subject_ids,label_df,selected_scan
     cdr=[]
     ids=[]
     subject_ids = set(subject_ids)
-    dpaths = os.listdir(data_path)
-    path1 = os.path.join(data_path,dpaths[0])
-    path2 = os.path.join(data_path,dpaths[1])
+    #dpaths = os.listdir(data_path)
+    path1 = data_path[0]
+    path2 = data_path[1]
     list1 = os.listdir(path1)
     list2 = os.listdir(path2)
     for subject in subject_ids :
-    	if subject in list1:
-    		path=os.path.join(path1,subject)
-    	elif subject in list2:
-        	path=os.path.join(path2,subject)
-        paths=os.listdir(path)
-        ids.extend([scan_id.split('.')[0] for scan_id in paths  if scan_id.split('/')[-1].split('.')[0] in selected_scans ])
-        scans.extend([ os.path.join(path,scan_id) for scan_id in paths   if scan_id.split('/')[-1].split('.')[0] in selected_scans ])
-        
-    
-        labels.extend([label_df[label_df['MRI ID']==scan_id.split('.')[0]]['Age'].to_list()[0] for scan_id in paths   if scan_id.split('/')[-1].split('.')[0] in selected_scans ])
-        gender.extend([label_df[label_df['MRI ID']==scan_id.split('.')[0]]['M/F'].to_list()[0] for scan_id in paths   if scan_id.split('/')[-1].split('.')[0] in selected_scans])
-        cdr.extend([label_df[label_df['MRI ID']==scan_id.split('.')[0]]['CDR'].to_list()[0] for scan_id in paths  if scan_id.split('/')[-1].split('.')[0] in selected_scans])
-
+       if subject in list1:
+          path=os.path.join(path1,subject)
+       elif subject in list2:
+          path=os.path.join(path2,subject)
+       paths=os.listdir(path)
+       ids.extend([scan_id.split('.')[0] for scan_id in paths  if scan_id.split('/')[-1].split('.')[0] in selected_scans ])
+       scans.extend([ os.path.join(path,scan_id) for scan_id in paths   if scan_id.split('/')[-1].split('.')[0] in selected_scans ])
+       labels.extend([label_df[label_df['MRI ID']==scan_id.split('.')[0]]['Age'].to_list()[0] for scan_id in paths   if scan_id.split('/')[-1].split('.')[0] in selected_scans ])
+       gender.extend([label_df[label_df['MRI ID']==scan_id.split('.')[0]]['M/F'].to_list()[0] for scan_id in paths   if scan_id.split('/')[-1].split('.')[0] in selected_scans])
+       cdr.extend([label_df[label_df['MRI ID']==scan_id.split('.')[0]]['CDR'].to_list()[0] for scan_id in paths  if scan_id.split('/')[-1].split('.')[0] in selected_scans])
     return scans,labels,gender,ids,cdr
 
 def get_scan_from_subjects(data_path,subject_ids,label_df):
@@ -104,7 +92,6 @@ def get_scan_from_subjects(data_path,subject_ids,label_df):
         paths=os.listdir(path)
         ids.extend([scan_id.split('.')[0] for scan_id in paths ])
         scans.extend([ os.path.join(path,scan_path) for scan_path in paths  ])
- 
         labels.extend([label_df[label_df['MRI ID']==scan_id.split('.')[0]]['Age'].to_list()[0] for scan_id in paths   ])
         gender.extend([label_df[label_df['MRI ID']==scan_id.split('.')[0]]['M/F'].to_list()[0] for scan_id in paths  ])
         cdr.extend([label_df[label_df['MRI ID']==scan_id.split('.')[0]]['CDR'].to_list()[0] for scan_id in paths ])
@@ -179,8 +166,8 @@ gender_cdr_chunk_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(list
 gender_cdr_full_dict = defaultdict(lambda: defaultdict(list))
 dt_string = datetime.now().strftime('%d-%m-%Y-%H-%M')+'mean_scans_smoe_maps_blockend_scale_endlayers_equal_weights'
 
-label_path= '../../csv_data/oasis1_oasis3_labels.csv'
-data_path= ['../../tfrecords_data/OASIS1_3_combined/tfrecords_data_cdr0_training/testing_all_cdr','../../tfrecords_data/OASIS1_3_combined/tfrecords_data_cdr0_training/training_cdr0'
+label_path= '../../csv_data/OASIS1_3_combined/oasis1_oasis3_labels.csv'
+data_path= ['/no_backups/g009/data/OASIS/tfrecords_data_exp4/testing_all_cdr','/no_backups/g009/data/OASIS/tfrecords_data_exp4/training_cdr0']
 test_patients,scan_ids, test_labels,test_gender,test_cdr = get_test_files(label_path,data_path,debug_mode_subject=sub,selected_scans=scans)
 tfr=tf.data.TFRecordDataset(test_patients)
 img_tf=tfr.map(map_func=lambda a:parse_function_image(a))
@@ -212,18 +199,20 @@ for g in gender_cdr_full_dict.keys():
               print(slice_mean.shape)
               
               img_s = np.mean(full_imgs[:,48:54,:,:],axis=0)
-              img_s=np.expand_dims(img_s,0)
+              print(f'sagittal ={img_s.shape}')
+              #img_s=np.expand_dims(img_s,0)
               slice_mean = torch.from_numpy(img_s).permute(2,1,0).numpy()
               print(slice_mean.shape)
               savemat(matpath+'slice'+str(slice_id)+'sagittal_img_mean_cdr'+str(cdr)+'_'+gender_dict[g]+'.mat',{'data': full_mean,'shape':full_mean.shape})
               
               img_c = np.mean(full_imgs[:,:,48:54,:],axis=0)
               # img_c=np.expand_dims(img_c,0)
-              img_c= torch.from_numpy(img_c).permute(1,0)
+              img_c= torch.from_numpy(img_c).permute(2,0,1)
 
-              img_c=img_c.unsqueeze(-1)
+              #img_c=img_c.unsqueeze(-1)
               img_c=img_c.unsqueeze(0)
-              img_c = torch.nn.functional.upsample(img_c.unsqueeze(0), size=(121,145,1), mode='nearest') 
+              print(f'coronal={img_c.shape}')
+              img_c = torch.nn.functional.upsample(img_c.unsqueeze(0), size=(121,145,6), mode='nearest') 
               slice_mean = img_c[0,0,:,:,:].numpy()
               print(slice_mean.shape)
               savemat(matpath+'slice'+str(slice_id)+'coronal_img_mean_cdr'+str(cdr)+'_'+gender_dict[g]+'.mat',{'data': full_mean,'shape':full_mean.shape})
