@@ -11,7 +11,7 @@
   - colab_notebooks/siamese_estimation_network_......ipynb
   
 
-### Activated Visualization Regions on applying SMOE Saliency Maps [1] with GRADCAM++ [3]
+### Visualization Generated: Activated Regions on applying SMOE Saliency Maps [1] with GRADCAM++ [3]
 
 ![im1](https://github.com/shashank3110/Master_Thesis_BA_DeepVis/blob/master/static_files/im1.png)
 ![im2](https://github.com/shashank3110/Master_Thesis_BA_DeepVis/blob/master/static_files/im2.png)
