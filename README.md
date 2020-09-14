@@ -1,5 +1,5 @@
 # Master_Thesis_BA_DeepVis
-Master thesis code version control.
+### Master thesis code version control.
 
 - Data Preprocessing refer:  data_preprocessing/..   <br/>  (refer the Preprocessing_README.md  inside data_preprocessing/)
 
@@ -11,7 +11,7 @@ Master thesis code version control.
   - colab_notebooks/siamese_estimation_network_......ipynb
   
 
-## Activated Visualization Regions on applying SMOE Saliency Maps [1] with GRADCAM++ [3]
+### Activated Visualization Regions on applying SMOE Saliency Maps [1] with GRADCAM++ [3]
 
 ![im1](https://github.com/shashank3110/Master_Thesis_BA_DeepVis/blob/master/static_files/im1.png)
 ![im2](https://github.com/shashank3110/Master_Thesis_BA_DeepVis/blob/master/static_files/im2.png)
@@ -19,8 +19,13 @@ Master thesis code version control.
 ![im4](https://github.com/shashank3110/Master_Thesis_BA_DeepVis/blob/master/static_files/im4.png)
 
 
-## References
+### References
 - [1] [Efficient Saliency Maps for Explainable AI](https://arxiv.org/abs/1911.11293)
 - [2] [Grad-CAM: Visual Explanations from Deep Networks via Gradient-based Localization](https://arxiv.org/abs/1610.02391)
 - [3] [Grad-CAM++: Improved Visual Explanations for Deep Convolutional Networks](https://arxiv.org/abs/1710.11063)
 - [4] [Smooth Grad-CAM++: An Enhanced Inference Level Visualization Technique for Deep Convolutional Neural Network Models](https://arxiv.org/abs/1908.01224)
+
+### Brain Atlas for reference (requires flash player support enabled on browser):
+http://www.thehumanbrain.info/head_brain/horizontal.php
+http://www.thehumanbrain.info/head_brain/hn_coronal_atlas/coronal.html
+http://www.thehumanbrain.info/head_brain/hn_sagittal_atlas/sagittal.html
