@@ -1,4 +1,4 @@
-# Master_Thesis_BA_DeepVis
+# Master Thesis: Deep Visualization for MR based Biological Age Estimation.
 ### Master thesis code version control.
 
 - Data Preprocessing refer:  data_preprocessing/..   <br/>  (refer the Preprocessing_README.md  inside data_preprocessing/)
@@ -12,12 +12,7 @@
   
 
 ### Visualization Generated: Activated Regions on applying SMOE Saliency Maps [1] with GRADCAM++ [3]
-
-![im1](https://github.com/shashank3110/Master_Thesis_BA_DeepVis/blob/master/static_files/im1.png)
-![im2](https://github.com/shashank3110/Master_Thesis_BA_DeepVis/blob/master/static_files/im2.png)
-![im3](https://github.com/shashank3110/Master_Thesis_BA_DeepVis/blob/master/static_files/im3.png)
-![im4](https://github.com/shashank3110/Master_Thesis_BA_DeepVis/blob/master/static_files/im4.png)
-
+![cover](https://github.com/shashank3110/Master_Thesis_BA_DeepVis/blob/master/static_files/healthy_activated_regions.svg)
 
 ### References
 - [1] [Efficient Saliency Maps for Explainable AI](https://arxiv.org/abs/1911.11293)
