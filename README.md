@@ -11,7 +11,7 @@
   
 
 ### Visualization Generated: Activated Regions on applying SMOE Saliency Maps [1] with GRADCAM++ [3]
-![cover](https://github.com/shashank3110/Master_Thesis_BA_DeepVis/blob/master/static_files/healthy_activated_regions.svg)
+![cover](https://github.com/shashank3110/Master_Thesis_BA_DeepVis/blob/master/static_files/healthy_activated_regions.png)
 
 ### References
 - [1] [Efficient Saliency Maps for Explainable AI](https://arxiv.org/abs/1911.11293)
