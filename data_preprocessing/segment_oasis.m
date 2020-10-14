@@ -6,7 +6,7 @@ data_dir='/no_backups/g009/data/OASIS/OASIS1_3_combined'
 cd(data_dir);
 dir_items = dir();
 for i=2167;%i=2053:2199;
-    % disp([data_dir, '/',dir_items(i).name,'/RAW/','mpr-1.nifti.img'])
+   
     % this condition avoids any blank directories
     if startsWith(dir_items(i).name,'.')
     	continue
