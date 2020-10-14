@@ -1,7 +1,7 @@
 
 library(spm12r)
 mean_img='~/.shashanks/MATLAB/spm12/canonical/avg152T1.nii'
-#path = "/media/shashanks/Windows/Users/Shashank_S/linux_partition/BA_estimation/OASIS2/OAS2_RAW_PART1/"
+
 path='/no_backups/g009/data/OASIS/OASIS1_3_combined'
 folders = dir(path)
 
