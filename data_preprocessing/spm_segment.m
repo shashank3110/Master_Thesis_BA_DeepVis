@@ -4,7 +4,6 @@ function spm_segment( nii_file_path )
 %####################################
 clear matlabbatch;
 
-%nii_file = '/media/shashanks/Windows/Users/Shashank_S/linux_partition/BA_estimation/OAS2_0002_MR1/scans/1/resources/123127134/files/RAW/mpr-1.nifti.img'
 %disp(nii_file)
 matlabbatch{1}.spm.spatial.preproc.channel.vols = nii_file_path %{[nii_file_path,',1']};
 matlabbatch{1}.spm.spatial.preproc.channel.biasreg = 0.001;
