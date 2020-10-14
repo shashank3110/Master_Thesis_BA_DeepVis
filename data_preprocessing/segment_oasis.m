@@ -1,7 +1,5 @@
 % List of open inputs
-% nii_file = 'S:\Auswertung\Sergios\Sotirios\Normkollektiv\sNR_NORM_052-0003-00001-000192-01.nii';
-%nii_file = 'S:\Auswertung\Sergios\Sotirios\Normkollektiv\T1.nii';
-%data_dir = '/media/shashanks/Windows/Users/Shashank_S/linux_partition/BA_estimation/OASIS2/OAS2_RAW_PART1';
+
 addpath('~/.shashanks/MATLAB/spm12/')
 addpath('~/.shashanks/data_preprocessing/')
 data_dir='/no_backups/g009/data/OASIS/OASIS1_3_combined'
@@ -33,5 +31,3 @@ end
 nii_file_path=nii_file_path(~cellfun('isempty',nii_file_path))
 disp(nii_file_path)
 spm_segment(nii_file_path)
-% nii_file_path = {[data_dir, '/',dir_items(1).name,'/RAW/','mpr-1.nifti.nii']} 
-% spm_segment(nii_file_path)
