@@ -1,12 +1,7 @@
 import os
 import nibabel as nib
-
-#d = "/media/shashanks/Windows/Users/Shashank_S/linux_partition/BA_estimation/OASIS/"
-#d = "/usrhomes/g009/.shashanks/OASIS/OASIS1/"
-#flist=os.listdir(d)
-#print(flist)
-
 import pandas as pd
+
 df=pd.read_csv('/no_backups/g009/data/oasis1_id.csv',header=None)
 subjects=list(df[0])
 print(f'***Subjects***={subjects}')
@@ -29,11 +24,3 @@ for i in range(1,13):
                         #os.mkdir('mkdir '+combined_path_dir)
                         print(f"destination={os.path.join(combined_path_dir,dest.split('/')[-1])}")
                         os.system('cp '+dest+' '+os.path.join(combined_path_dir,dest.split('/')[-1]))
-'''
-for f in flist:
-        print(f)
-        img_name  = d+f+'/RAW/'+'mpr-1.nifti.img'
-
-        im = nib.load(img_name)
-        nib.save(im, img_name.replace('.img', '.nii'))
-'''
