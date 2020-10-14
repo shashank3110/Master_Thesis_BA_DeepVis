@@ -1,6 +1,5 @@
 
 
-%data_dir = '/media/shashanks/Windows/Users/Shashank_S/linux_partition/BA_estimation/OASIS2/OAS2_RAW_PART1';
 addpath('/no_backups/g009/data/OASIS/')
 addpath('~/.shashanks/MATLAB/spm12')
 
@@ -22,10 +21,7 @@ disp(length(dir_items))
 k=1
 l=1
 for i = 1:length(dir_items);
-    %matlabbatch{1}.spm.tools.dartel.mni_norm.data.subj(i).flowfield{1} = [data_dir, '/',dir_items(i).name,'/RAW/','u_rc1mpr-1.nifti_Template_run1.nii'];
-    %matlabbatch{1}.spm.tools.dartel.mni_norm.data.subj(i).images{1} = [data_dir, '/',dir_items(i).name,'/RAW/','c1mpr-1.nifti.nii'];
-    %fprintf('i=%d',i)
-    %path(i)=dir_items(i).name
+    
     if startsWith(dir_items(i).name,'.')
     	
         continue
@@ -69,10 +65,7 @@ disp(matlabbatch{1}.spm.tools.dartel.mni_norm.data.subj(3))
 disp(matlabbatch{1}.spm.tools.dartel.mni_norm.data.subj(2290))
 
 disp(matlabbatch{1}.spm.tools.dartel.mni_norm.data.subj(k-1))
-%disp(path(1),disp(2),disp(3))
-% sVoxSize = [1 1 1] %voxelsize for resampling
-% matlabbatch{1}.spm.tools.dartel.mni_norm.vox = sVoxSize;
-% matlabbatch{1}.spm.tools.dartel.mni_norm.bb = [NaN NaN NaN; NaN NaN NaN];
+
 matlabbatch{1}.spm.tools.dartel.mni_norm.preserve = 1; %modulation
 matlabbatch{1}.spm.tools.dartel.mni_norm.fwhm = [4 4 4];%smoothing kernel size % smoothing 4mm kernel
 
