@@ -1,4 +1,4 @@
-
+% Perform normalization using the dartel template followed by modulation, smoothing 
 
 addpath('/no_backups/g009/data/OASIS/')
 addpath('~/.shashanks/MATLAB/spm12')

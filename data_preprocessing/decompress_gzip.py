@@ -1,3 +1,7 @@
+'''
+Decompress .gzip files from the OASIS data
+'''
+
 import os
 
 path='/no_backups/g009/data/OASIS/OASIS3/'

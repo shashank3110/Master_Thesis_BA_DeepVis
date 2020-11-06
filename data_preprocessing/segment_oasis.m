@@ -1,4 +1,4 @@
-% List of open inputs
+% mri segmentation module
 
 addpath('~/.shashanks/MATLAB/spm12/')
 addpath('~/.shashanks/data_preprocessing/')

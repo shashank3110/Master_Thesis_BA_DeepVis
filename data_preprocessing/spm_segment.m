@@ -1,3 +1,6 @@
+
+% mri segmentation utility function
+
 function spm_segment( nii_file_path )
 
 

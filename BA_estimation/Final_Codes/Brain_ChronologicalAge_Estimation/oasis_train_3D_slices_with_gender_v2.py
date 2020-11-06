@@ -1,7 +1,8 @@
-#############################################################################################################################################
-# This is the main file for training the network for Chronological Age estimation with age and gender. The file consists of an Iterative training
-# and testing loop. The input data strategy of dividing the volume into volume chunks is employed here. The hybrid 3D CNN network is used for training.
-#############################################################################################################################################
+'''
+This is the main file for training the network for Chronological Age estimation with age and gender. 
+The input data strategy of dividing the volume into volume chunks is employed here. 
+The hybrid 3D CNN network is used for training.
+'''
 
 import os
 import cv2
@@ -26,40 +27,30 @@ from tensorflow.keras.callbacks import (CSVLogger,\
     ReduceLROnPlateau,
     LearningRateScheduler
 )
-#import SmoothGradCAMplusplus 
-#from SmoothGradCAMplusplus.cam import CAM, GradCAM, GradCAMpp, SmoothGradCAMpp
-#from SmoothGradCAMplusplus.utils.visualize import visualize, reverse_normalize
-#from SmoothGradCAMplusplus.utils.imagenet_labels import label2idx, idx2label
+
 from tensorflow.keras.layers import *
 from tensorflow.keras import backend as K
 K.set_image_data_format = 'channels_last'
 from tensorflow.compat.v1.keras.backend import set_session,clear_session,get_session
-# from keras.backend.tensorflow_backend import clear_session
-# from keras.backend.tensorflow_backend import get_session
+
 
 
 # Import own scripts
 import util.generator_3D_volume_slices_age_with_gender as generator
-#import get_train_eval_files_oasis as get_train_eval_files
 import get_train_eval_files_multiple as get_train_eval_files
-#import multi_gpu
 import numpy
 import gc
 from network import Hybrid3DCNN_gender_age_v2,Hybrid3DCNN_gender_age_v2_classification,Hybrid3DCNN_oasis
 from datetime import datetime
 from skimage.transform import resize
-#from vis_utils.visualize_cam import gradcam,smooth_gradcam_pp
+
 
 print(tf.__version__)
 total_gpus=tf.config.experimental.list_physical_devices('GPU')
 print(f'total_gpus={total_gpus}')
 gpu=total_gpus[0]
 tf.config.experimental.set_visible_devices(gpu,'GPU')
-#tf.config.experimental.set_memory_growth(gpu, True)
 
-#tf.config.experimental.set_virtual_device_configuration(
- #       gpu,
-  #      [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=18000)])
 logical_gpus = tf.config.experimental.list_logical_devices('GPU')
 print(f'GPUs used = {logical_gpus}')
 #Use the below class only if you want to train on several GPUs
@@ -84,11 +75,7 @@ def train(cf,exp_name):
     
     #Choose the GPU on which the training should run    
     print(f'GPUs used = {logical_gpus}')
-    # os.environ["CUDA_VISIBLE_DEVICES"] = str(cf['Training']['gpu_num'])
-    #config = tf.compat.v1.ConfigProto() #config.experimental.ConfigProto()
-    ##config.gpu_options.per_process_gpu_memory_fraction = 0.2
-    #config.gpu_options.allow_growth = True
-    # set_session(tf.compat.v1.Session(graph=tf.compat.v1.get_default_graph(),config=config))
+
 
     train_data_path = cf['Paths']['train_tfrecord']
     train_label_path = cf['Paths']['labels']
@@ -106,28 +93,7 @@ def train(cf,exp_name):
     train_patients,eva_patients,train_labels, train_labels_gender, train_cdr,eva_labels, eva_labels_gender,eval_cdr \
          = get_train_eval_files.prepare_train_eval_files(train_label_path,train_data_path, train_eval_ratio)
     
-    # train_path_length = len(train_path)
-    # total_patient_name1 = []
-    #Get the validation patients names
-    # for i in range(len(eva_files)):
-    #     validation_pateint_number1= eva_files[i][train_path_length:-9]
-    #     total_patient_name1.append(validation_pateint_number1)
-   
-    # age_labels = []
-    # for i in range(len(eva_files)):
-    #    validation_pateint_age_labels= eva_labels[i]
-    #    age_labels.append(validation_pateint_age_labels)
-        
-    # gender_labels = []
-    # for i in range(len(eva_files)):
-    #    validation_pateint_gender_labels= eva_labels_gender[i]
-    #    gender_labels.append(validation_pateint_gender_labels)
 
-    # total_patient_name2 = []
-    # #Get the training patients names
-    # for i in range(len(train_patient)):
-    #     validation_pateint_number2= train_patient[i][train_path_length:-9]
-    #     total_patient_name2.append(validation_pateint_number2)
     
     print('Length of training patients is: ', len(eva_labels))
     print('The training patients are: ',train_patients)
@@ -175,14 +141,13 @@ def train(cf,exp_name):
 
     learning_rate = cf['Training']['learning_rate']
     
-    #Uncomment below commands if using SGD optimizer
-    #sgd = optimizers.SGD(lr=0.0001,clipnorm=25.0, decay=1e-6, momentum=0.9, nesterov=True)
-    #model.compile(loss='mean_squared_error', optimizer=sgd, metrics=['mae'])
+    
     
     print('learning rate is:',learning_rate )
     adm = optimizers.Adam(lr=learning_rate)
     if cf['Classification'] =='Y' : 
-        model.compile(loss='categorical_crossentropy', optimizer=adm, metrics=[tf.keras.metrics.AUC(),'categorical_accuracy', 'accuracy'])
+        model.compile(loss='categorical_crossentropy', optimizer=adm, \
+            metrics=[tf.keras.metrics.AUC(),'categorical_accuracy', 'accuracy'])
     else:
         model.compile(loss='mse', optimizer=adm, metrics=['mae', rmse])
     model.summary()
@@ -208,7 +173,8 @@ def train(cf,exp_name):
             callbacks.append(ReduceLROnPlateau(monitor='val_auc',mode='auto', factor=0.2, patience=12, min_lr=1e-7))
             print('###step4 in callback func ###')
             #Stop training in case of validation error increase
-            callbacks.append(EarlyStopping(monitor='val_auc', min_delta=0.005, patience=18, verbose=0, mode='auto', baseline=None, restore_best_weights=False))
+            callbacks.append(EarlyStopping(monitor='val_auc', min_delta=0.005, patience=18, verbose=0,\
+             mode='auto', baseline=None, restore_best_weights=False))
             print('###step5 leaving  callback func ###')
         else:
             #Save the model
@@ -226,7 +192,8 @@ def train(cf,exp_name):
             callbacks.append(ReduceLROnPlateau(monitor='val_mae', factor=0.2, patience=12, min_lr=1e-7))
             print('###step4 in callback func ###')
             #Stop training in case of validation error increase
-            callbacks.append(EarlyStopping(monitor='val_mae', min_delta=0.005, patience=18, verbose=0, mode='auto', baseline=None, restore_best_weights=False))
+            callbacks.append(EarlyStopping(monitor='val_mae', min_delta=0.005, patience=18, verbose=0,\
+             mode='auto', baseline=None, restore_best_weights=False))
             print('###step5 leaving  callback func ###')
         return callbacks
 
@@ -275,7 +242,8 @@ def train(cf,exp_name):
           epochs = epoch,
           validation_data=val_generator,
           validation_steps=validata_steps,
-          callbacks=get_callbacks(model_file=path_w, logging_file=logging_file,checkpoint_path=checkpoint_path,classification_flag=cf['Classification']))
+          callbacks=get_callbacks(model_file=path_w, logging_file=logging_file,\
+            checkpoint_path=checkpoint_path,classification_flag=cf['Classification']))
     print(f'training history={history.history}')
                 
 #Testing on the test set
@@ -372,7 +340,8 @@ def test(cf,exp_name):
         # print(f'first prediction ={cdr_prediction[0],len(cdr_prediction),len(cdr_prediction[0])}')
         # return
         # model.compile(loss='mse', optimizer=adm, metrics=['mae', rmse])
-        model.compile(loss='categorical_crossentropy', optimizer=adm, metrics=[tf.keras.metrics.AUC(),'categorical_accuracy', 'accuracy'])
+        model.compile(loss='categorical_crossentropy', optimizer=adm, metrics=[tf.keras.metrics.AUC(),\
+            'categorical_accuracy', 'accuracy'])
         classification_eval= model.evaluate(test_generator, steps=test_steps, verbose=1)
 
         for i in range(num_patients):
@@ -797,16 +766,6 @@ def visualize_test(cf, exp_name,vis_name='gcam'):
     #***************  
 
 
-    ############################################
-    # wrapped_model = SmoothGradCAMpp(model, target_layer, n_samples=25, stdev_spread=0.15)
-    # cam, idx = wrapped_model(tensor)
-    # plt.plot(cam.squeeze().numpy(), alpha=0.5)
-    # plt.imsave(cf['Paths']['save']+'/vis_map.png',cmap='jet')
-    # img = reverse_normalize(tensor)
-    # heatmap = visualize(img, cam)
-    # hm = (heatmap.squeeze().numpy().transpose(1, 2, 0)).astype(np.int32)
-    # plt.imsave(cf['Paths']['save']+'/vis_map_overlay.png',cmap='jet')
-    ############################################################################################
 
 if __name__ == '__main__':
     #The argparse module makes it easy to write user-friendly command-line interfaces

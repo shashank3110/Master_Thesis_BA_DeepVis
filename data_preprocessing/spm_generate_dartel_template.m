@@ -1,4 +1,4 @@
-
+% Generate the dartel normalization templates
 
 addpath('/no_backups/g009/data/OASIS/')
 addpath('~/.shashanks/MATLAB/spm12')

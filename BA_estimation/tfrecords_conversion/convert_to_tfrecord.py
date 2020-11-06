@@ -1,15 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jan 22 11:51:40 2020
-
-@author: Anish
-"""
-
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Sep  9 19:17:07 2019
-
-@author: Anish
+Organ-based Chronological Age Estimation based on 3D MRI Scans
+https://arxiv.org/abs/1910.06271
+The following code is adapted from the above work.
 """
 import tensorflow as tf
 import numpy as np
@@ -46,8 +39,8 @@ def im2tfrecord(image, image_shape, path):
         
 if __name__ == '__main__':
 
-    path = '/media/shashanks/Windows/Users/Shashank_S/linux_partition/BA_estimation/OASIS2/OAS2_RAW_PART1/OAS2_0001_MR1/RAW/'#'D:/4th_semester/Tensorflow_Codes/Biological_Age_Estimation/knee_mri_nii/' #.nii files path
-    path_tf = '/media/shashanks/Windows/Users/Shashank_S/linux_partition/BA_estimation/tfrecords_data/'#'D:/4th_semester/Tensorflow_Codes/Biological_Age_Estimation/knee_mri_nii_tfrecords_new/' #path to store tfrecords
+    path = '../BA_estimation/OASIS2/OAS2_RAW_PART1/OAS2_0001_MR1/RAW/'
+    path_tf = '../BA_estimation/tfrecords_data/'
 
     typename = 'nii'
     b_custom = False
@@ -71,9 +64,7 @@ if __name__ == '__main__':
         print(image.shape)
         #print(header)
         pat_name = pat[72:-4]
-#        if image.shape==(320,304,37):
-#            print(pat_name)
-        #im2tfrecord(image=image, image_shape = img_shape, path=path_tf + pat_name + '.tfrecord')
+
     for i, pat in enumerate(pat_path_list):
         
         image, header, img_shape = read_nii.read(pat)

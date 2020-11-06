@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+############################################
+# Read NIFTI files utility function
+############################################
 import os
 import nibabel as nib
 
@@ -24,13 +26,12 @@ def read(path='', b_reorient=False, orientation=(('R', 'L'), ('P', 'A'), ('I', '
         image = nib.apply_orientation(image, orientations)
         header = image_nii.header
         img_shape = image.shape
-        #print(img_shape)
-        # image_nii = nib.as_closest_canonical(image_nii)  # quick way to switch to RAS
+ 
     else:
-        #print('inside orient false')
+   
         image = image_nii.get_data()
         img_shape = image.shape
-        #print(img_shape)
+
     header = image_nii.header
     print(f'preprocessed data shape={img_shape}')
     return image, header, img_shape

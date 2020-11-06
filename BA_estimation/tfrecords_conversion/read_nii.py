@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+'''
+Read NIFTI files utility function.
+
+Organ-based Chronological Age Estimation based on 3D MRI Scans
+https://arxiv.org/abs/1910.06271
+The following code is adapted from the above work.
+'''
 
 import os
 import nibabel as nib
@@ -37,8 +44,8 @@ def read(path='', b_reorient=False, orientation=(('R', 'L'), ('P', 'A'), ('I', '
 
 # Added this section below to try running this script indepently
 if __name__=='__main__':
-	im_path = '/media/shashanks/Windows/Users/Shashank_S/linux_partition/BA_estimation/OAS2_0002_MR1/scans/1/resources/123127134/files/RAW/mpr-1.nifti.img'
-	im_path = '/media/shashanks/Windows/Users/Shashank_S/linux_partition/BA_estimation/OAS2_0002_MR1/scans/1/resources/123127134/files/RAW/c5mpr-1.nifti.nii'
+	im_path = '../BA_estimation/OAS2_0002_MR1/scans/1/resources/123127134/files/RAW/mpr-1.nifti.img'
+	im_path = '../BA_estimation/OAS2_0002_MR1/scans/1/resources/123127134/files/RAW/c5mpr-1.nifti.nii'
 	print(im_path)
 	image, header, img_shape = read(path=im_path)
 	#print(f'image={image}')

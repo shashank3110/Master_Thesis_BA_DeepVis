@@ -22,7 +22,7 @@ def get_slice_group_3dimenstion(image=None, train_patch_size=[121, 145, 6], samp
         add_offset = 6
     else:
         add_offset = 0
-        # offset = train_patch_size[-1]#single sample ie full size
+ 
         
     for i in range(samples):
         
@@ -116,7 +116,7 @@ def batch_and_run(dataset_1, batch_size, count, case):
     dataset_choosed = dataset_choosed.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 
     #Once you have built a Dataset to represent your input data, the next step is to create an Iterator to access elements from that dataset
-    iterator_all = dataset_choosed.__iter__()#make_one_shot_iterator()
+    iterator_all = dataset_choosed.__iter__()
     next_all = iterator_all.get_next()
 
     #####Shashank Salian : removed tf1 session 
@@ -135,18 +135,3 @@ def batch_and_run(dataset_1, batch_size, count, case):
         except tf.errors.OutOfRangeError:
             print('Finished')
             break
-    ###
-    # with tf.compat.v1.Session() as sess: 
-    #     while True:
-    #         try:
-    #             features, genders, labels = sess.run(next_all)
-
-
-    #             features = np.expand_dims(features, -1)
-
-    #             yield [features, genders], labels
-
-    #         except tf.errors.OutOfRangeError:
-    #             print('Finished')
-    #             break
-

@@ -1,3 +1,6 @@
+#############################################
+# R utility code to perform acpc realignment
+#############################################
 
 library(spm12r)
 mean_img='~/.shashanks/MATLAB/spm12/canonical/avg152T1.nii'

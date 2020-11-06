@@ -5,24 +5,11 @@
 #Paths of the train, validation and testing files
 Paths:
     train_tfrecord : /no_backups/g009/data/OASIS/tfrecords_data_exp2/training/
-#/home/raarmak1/.shashanks/BA_estimation/tfrecords_data/OASIS1_3_combined/tfrecords_data_exp2/training/
-        # /home/raarmak1/.shashanks/BA_estimation/tfrecords_data/OASIS1_3_combined/tfrecords_data_cdr0_training/training_cdr0/
-        #/home/raarmak1/.shashanks/BA_estimation/tfrecords_data/OASIS1_3_combined/tfrecords_data_exp3/training/
-        #/home/raarmak1/.shashanks/BA_estimation/tfrecords_data/OASIS1_3_combined/tfrecords_data_cdr0_training/training_cdr0/
 
-        #/home/raarmak1/.shashanks/BA_estimation/tfrecords_data/OASIS1_3_combined/tfrecords_data_exp3/training/
-    #/home/raarmak1/.shashanks/BA_estimation/tfrecords_data/OASIS1_3_combined/tfrecords_data_cdr0_training/training_cdr0/
-        #/home/raarmak1/.shashanks/BA_estimation/tfrecords_data/OASIS1_3_combined/tfrecords_data_exp2/training/
-#home/raaramk1/.shashanks/BA_estimation/tfrecords_data/training/  #/home/d1308/no_backup/d1308/train_data_brain/ 
     test_tfrecord : /no_backups/g009/data/OASIS/tfrecords_data_exp2/testing/
-#/home/raarmak1/.shashanks/BA_estimation/tfrecords_data/OASIS1_3_combined/tfrecords_data_exp2/testing/
-    #/home/raarmak1/.shashanks/BA_estimation/tfrecords_data/OASIS1_3_combined/tfrecords_data_cdr0_training/testing_all_cdr/
-        
-        #/home/raarmak1/.shashanks/BA_estimation/tfrecords_data/OASIS1_3_combined/tfrecords_data_cdr0_training/testing_all_cdr/
-    #/home/raarmak1/.shashanks/BA_estimation/tfrecords_data/OASIS1_3_combined/tfrecords_data_cdr0_training/testing_all_cdr/        #
-    #/home/raarmak1/.shashanks/BA_estimation/tfrecords_data/OASIS1_3_combined/tfrecords_data_exp2/testing/ #/home/raaramk1/.shashanks/BA_estimation/tfrecords_data/testing/ #/home/d1308/no_backup/d1308/test_data_brain/ 
+
+ 
     labels : /no_backups/g009/data/oasis1_oasis3_labels.csv
-#/home/raarmak1/.shashanks/BA_estimation/csv_data/OASIS1_3_combined/oasis1_oasis3_labels.csv # path of nako label (data from dicom header and restore in csv file)
 
 Data:
     train_val_split : 0.82                        # e.g. 0.8 -> 80% train, 20% validation

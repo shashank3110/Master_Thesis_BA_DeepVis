@@ -1,4 +1,11 @@
 
+'''
+Read NIFTI files and convert to .tfrecords
+split into train and test sets.
+Multiple scans of a given subject are either  
+in the train or test and not scattered across
+'''
+
 import tensorflow as tf
 import numpy as np
 import  read_nii
@@ -32,38 +39,7 @@ def im2tfrecord(image, image_shape, path):
     with tf.io.TFRecordWriter(str(path)) as writer:
         writer.write(example.SerializeToString())
 
-# def split_using_subject_id(subject_df,path):
-#     '''
-#     Split based on subject ids and not scan ids
-#     so that multiple scans of a patient are not scattered 
-#     across train & test set.
 
-#     '''   
-#     df = pd.read_csv(subject_df)
-#     length=len(df)
-#     subject_list=df['Subject ID'].tolist()
-#     mri_count_list = df['MR Sessions'].tolist()
-#     split_index = int(train_test_split*length)  
-#     train_subjects = subject_list[:split_index]
-#     test_subjects = subject_list[split_index:]
-#     train_sess_count = mri_count_list[split_index:]
-#     test_sess_count = mri_count_list[:split_index]
-#     train_session_dict=dict(zip(train_subjects,train_sess_count))
-#     test_session_dict=dict(zip(test_subjects,test_sess_count))
-#     train_path_list=[]
-#     test_path_list=[]
-
-#     for  t in  train_subjects:
-#         for c in range(train_session_dict[t]):
-#             pat_path=os.path.join(path,t+'_MR'+str(c+1)+'/RAW/smwc1mpr-1.nifti.nii')
-#             train_path_list.append(pat_path)
-
-#     for  t in  test_subjects:
-#         for c in range(test_session_dict[t]):
-#             pat_path=os.path.join(path,t+'_MR'+str(c+1),'/RAW/smwc1mpr-1.nifti.nii')
-#             test_path_list.append(pat_path)
-
-#     return train_pat_path_list,test_pat_path_list
 def get_pat_path(t,mri_list):
     '''
     returns path for each subject's preprocessed mri scan.
@@ -104,17 +80,7 @@ def split_using_subject_id(train_test_split,subject_df,path):
 
     for r in records:
         subject_mri_dict[r['Subject']].append(r['MR ID'])
-    #print(subject_mri_dict)
-    #backup same as df_subset = df[['Subject','MR ID']]
-    #subject_mri_df = pd.DataFrame(subject_mri_dict)
-    #subject_mri_df.to_csv('/no_backups/g009/data/subject_mri_df.csv')
-
-
-    # for s in subject_list:
-    #     for mri in mri_list:
-
-    #         subject_mri_dict[s].append(mri)
-    # mri_count_list = df['MR ID'].tolist()
+ 
 
     print(len(subject_list))
     split_index = int(train_test_split*len(subject_list))  
@@ -122,10 +88,7 @@ def split_using_subject_id(train_test_split,subject_df,path):
     print(len(train_subjects))
     test_subjects = subject_list[split_index:]
     print(len(test_subjects))
-    # train_sess_count = mri_count_list[split_index:]
-    # test_sess_count = mri_count_list[:split_index]
-    # train_session_dict=dict(zip(train_subjects,train_sess_count))
-    # test_session_dict=dict(zip(test_subjects,test_sess_count))
+
     
     train_path_dict=defaultdict(list)
     test_path_dict=defaultdict(list)
@@ -141,12 +104,7 @@ def split_using_subject_id(train_test_split,subject_df,path):
     for  t in  test_subjects:        
         test_path_list = get_pat_path(t,subject_mri_dict[t])
         test_path_dict[t] = test_path_list
-        # for m in range(mri_list):
-        #     if ('OAS3' in t and t in m) or ('OAS1' in t and t[4:] in m):
-        #         pat_file = [f for f in os.listdir(pat_dir) if 'smwc' in f]
-        #         pat_path = os.path.join(pat_dir,pat_file[0])
-        #         print(f'pat_path={pat_path}')
-        #         train_path_list.append(pat_path)
+  
 
     return train_path_dict,test_path_dict,subject_mri_dict
 
@@ -184,6 +142,8 @@ def convert_to_tfr(path_dict,path_tf,subject_mri_dict):
             count+=1
             im2tfrecord(image=image, image_shape = img_shape, path=itf_path + '.tfrecord')
         print(f'************Count={count,len(path_dict)}*******************')   
+
+
 def convert_all_to_tfr(train_path_dict,train_path_tf,test_path_dict,test_path_tf):
     convert_to_tfr(train_path_dict,train_path_tf)
     convert_to_tfr(test_path_dict,test_path_tf)
@@ -202,10 +162,7 @@ def split_using_subject_id_train_cdr0(train_test_split,subject_df,path):
 
     subject_list=df['Subject'].tolist()
     cdr_list = df['CDR'].to_list()
-    # mri_list = df['MR ID']
-
-    # subject_mri_pairs = list(zip(*(subject_list,mri_list)))
-    # random.shuffle(subject_mri_pairs)
+  
     subject_mri_dict=defaultdict(list)
     subject_list=list(set(subject_list))
 
@@ -215,26 +172,14 @@ def split_using_subject_id_train_cdr0(train_test_split,subject_df,path):
     for r in records:
         subject_mri_dict[r['Subject']].append(r['MR ID'])
 
-    #backup same as df_subset = df[['Subject','MR ID']]
-
-    # subject_mri_df = pd.DataFrame(subject_mri_dict)
-    # subject_mri_df.to_csv('/no_backups/g009/data/subject_mri_df.csv')
 
     #############
-    # for s in subject_list:
-    #     for mri in mri_list:
-
-    #         subject_mri_dict[s].append(mri)
-    # mri_count_list = df['MR ID'].tolist()
 
     
     split_index = int(train_test_split*length)  
     train_subjects = subject_list[:split_index]
     test_subjects = subject_list[split_index:]
-    # train_sess_count = mri_count_list[split_index:]
-    # test_sess_count = mri_count_list[:split_index]
-    # train_session_dict=dict(zip(train_subjects,train_sess_count))
-    # test_session_dict=dict(zip(test_subjects,test_sess_count))
+ 
     
     train_path_dict=defaultdict(list)
     test_path_dict=defaultdict(list)
@@ -273,33 +218,12 @@ if __name__ == '__main__':
     typename = 'nii'
     b_custom = False
     train_test_split = 0.8
-    # The below code has to be modified in accordance with the path where .nii files are stores, the naming of the .nii files and so on..
+    # The below code has to be modified in accordance with the path where .nii files are stores, 
+    # the naming of the .nii files and so on..
     
     pats = os.listdir(path)
-    # len_df={'OASIS1':416,'OASIS2':373,'OASIS3':1098}
-    
-
-    ###### old
-    # pat_path_list = []
-    # for pat in pats:
-
-    #         #pat_path = os.path.join(path, pat+'/RAW/smwc1mpr-1.nifti.nii')
-    #         pat_dir = os.path.join(path,pat)
-    #         pat_file = [f for f in os.listdir(pat_dir) if 'smwc' in f]
-    #         pat_path = os.path.join(pat_dir,pat_file[0])
-    #         print(f'pat_path={pat_path}')
-    #         #pat_path = os.path.join(path, pat+'/RAW/smwc1mpr-1.nifti.nii')
-    #         pat_path_list.append(pat_path)
-    
-    # path_name_pairs = list(zip(*(pat_path_list,pats)))
-    # random.shuffle(path_name_pairs)
-    # split_index = int(train_test_split*len(path_name_pairs))
-    # train_pat_path_list = path_name_pairs[:split_index]
-    # test_pat_path_list = path_name_pairs[split_index:] 
     ######
 
-    ######
-    ## comment lines 79 to 91 with this line below to get data split paths
     subject_df='/no_backups/g009/data/oasis1_oasis3_labels.csv'
     train_path_dict,test_path_dict,subject_mri_dict=split_using_subject_id(train_test_split,subject_df,path)
     #convert_all_to_tfr(train_path_dict,train_path_tf,test_path_dict,test_path_tf)
@@ -310,57 +234,4 @@ if __name__ == '__main__':
     convert_to_tfr(train_path_dict,train_path_tf,subject_mri_dict)
     convert_to_tfr(test_path_dict,test_path_tf,subject_mri_dict)
     #convert_to_tfr(train_path_dict,test_path_tf)
-    # for subject, mri_path_list in train_path_dict.items() :
-    #     tf_path = os.path.join(train_path_tf,subject)
-    #     os.mkdir(tf_path)
-    #     for mri_path in mri_path_list:
-    #         image, header, img_shape = read_nii.read(mri_path)
-          
-    #         print('Converting to tfrecords...')
-    #         print('Converting :'+ mri_path)
-
-    #         pat_name = mri_path.split('/')[-1]
-
-    #         tf_path = os.path.join(tf_path, pat_name)
-    #         print(f'Target path={tf_path}')
-    #         im2tfrecord(image=image, image_shape = img_shape, path=tf_path + '.tfrecord')
-
-
-    
-    
-    # for i, mri_path in enumerate(test_path_list):
-        
-    #     image, header, img_shape = read_nii.read(mri_path)
-        
-    #     print('Converting to tfrecords...')
-    #     print('Converting :'+ mri_path)
-
-    #     pat_name = mri_path.split('/')[-1]
-
-    #     tf_path = os.path.join(test_path_tf, pat_name)
-    #     print(f'Target path={tf_path}')
-    #     im2tfrecord(image=image, image_shape = img_shape, path=tf_path + '.tfrecord')
-
-
-    ######old
-    # for i, pat in enumerate(train_pat_path_list):
-        
-    #     image, header, img_shape = read_nii.read(pat[0])
-      
-    #     print('Converting to tfrecords...')
-    #     print('Converting :'+ pat[0])
-
-    #     pat_name = pat[1]#pat[87:-4]
-    #     tf_path = os.path.join(train_path_tf, pat_name)
-    #     im2tfrecord(image=image, image_shape = img_shape, path=tf_path + '.tfrecord')
-    
-    # for i, pat in enumerate(test_pat_path_list):
-        
-    #     image, header, img_shape = read_nii.read(pat[0])
-        
-    #     print('Converting to tfrecords...')
-    #     print('Converting :'+ pat[0])
-
-    #     pat_name = pat[1]#pat[87:-4]
-    #     tf_path = os.path.join(test_path_tf, pat_name)
-    #     im2tfrecord(image=image, image_shape = img_shape, path=tf_path + '.tfrecord')
+   

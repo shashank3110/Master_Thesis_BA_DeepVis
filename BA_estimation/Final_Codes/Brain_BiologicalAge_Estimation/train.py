@@ -2,7 +2,7 @@
 # This is the main file for training the network for Biological Age estimation. The file consists of an Iterative training and testing loop.
 # The input data strategy of dividing the volume into volume chunks is employed here. The hybrid 3D CNN network is used for training.
 #############################################################################################################################################
-##Shashank Salian : tf2 compatible version with test visualization (dev phase)
+##Shashank Salian : tf2 compatible version with test visualization 
 ##############
 import os
 import sys
@@ -35,18 +35,7 @@ from datetime import datetime
 from skimage.transform import resize
 
 K.set_image_data_format = 'channels_last'
-# from keras.backend.tensorflow_backend import set_session
-# from keras.backend.tensorflow_backend import clear_session
-# from keras.backend.tensorflow_backend import get_session
 
-####
-#Choose the GPU on which the training should run
-# os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-# config = tf.ConfigProto()
-# #config.gpu_options.per_process_gpu_memory_fraction = 0.2
-# config.gpu_options.allow_growth = True
-# set_session(tf.Session(config=config))
-####
 
 print(tf.__version__)
 total_gpus=tf.config.experimental.list_physical_devices('GPU')
@@ -58,20 +47,11 @@ tf.config.experimental.set_visible_devices(gpu,'GPU')
 logical_gpus = tf.config.experimental.list_logical_devices('GPU')
 print(f'GPUs used = {logical_gpus}')
 
-
-
-# Import own scripts
 import util.generator_3D_volume_slices_age_with_gender as generator
-# import get_train_eval_files_Bio as get_train_eval_files
 import get_train_eval_files_multiple as get_train_eval_files
-#import evaluation_plot
-#import multi_gpu
 import numpy
 import gc
-from network import Hybrid3DCNN_gender_age_v2,Hybrid3DCNN_oasis #,Hybrid3DCNN_gender_age_v2_classification
-# from network import Final_3D_volume_slice1
-# from SpectralNormalizationKeras import DenseSN, ConvSN1D, ConvSN2D, ConvSN3D
-# from dense import DenseNet
+from network import Hybrid3DCNN_gender_age_v2,Hybrid3DCNN_oasis 
 
 #Use the below class only if you want to train on several GPUs
 class ModelMGPU(Model):
@@ -81,7 +61,8 @@ class ModelMGPU(Model):
         self._smodel = ser_model
 
     def __getattribute__(self, attrname):
-        '''Override load and save methods to be used from the serial-model. The
+           '''
+           Override load and save methods to be used from the serial-model. The
            serial-model holds references to the weights in the multi-gpu model.
            '''
         if 'load' in attrname or 'save' in attrname:
@@ -95,10 +76,7 @@ def train(cf):
     
     print(f'GPUs used = {logical_gpus}')
     
-    #config = tf.compat.v1.ConfigProto()
-    #config.gpu_options.allow_growth = True
 
-    #train_path = cf['Paths']['train_tfrecord']
     train_eval_ratio = cf['Data']['train_val_split']
     batch_size = cf['Training']['batch_size']
     image_shape = cf['Training']['image_shape']
@@ -122,8 +100,9 @@ def train(cf):
 
     	##########################################
         #Divide the entire dataset into training and validation set
-        # train_patient, train_labels, train_labels_gender, eva_files, eva_labels, eva_labels_gender = get_train_eval_files.prepare_train_eval_files(train_path, train_eval_ratio)
-        train_patients,train_labels, train_labels_gender, train_cdr, train_scan_ids,train_ids,eva_patients,eva_labels, eva_labels_gender,eval_cdr,eval_scan_ids,eval_ids \
+        
+        train_patients,train_labels, train_labels_gender, train_cdr, train_scan_ids,train_ids,eva_patients,\
+        eva_labels, eva_labels_gender,eval_cdr,eval_scan_ids,eval_ids \
          = get_train_eval_files.prepare_train_eval_files(train_label_path,train_data_path, train_eval_ratio)
 
         total_patient_name1 = []
@@ -204,7 +183,8 @@ def train(cf):
             #Reduce LR on plateau
             callbacks.append(ReduceLROnPlateau(monitor='val_mae', factor=0.2, patience=12, min_lr=1e-7))
             #Stop training in case of validation error increase
-            callbacks.append(EarlyStopping(monitor='val_mae', min_delta=0.005, patience=18, verbose=1, mode='auto', baseline=None, restore_best_weights=False))
+            callbacks.append(EarlyStopping(monitor='val_mae', min_delta=0.005, patience=18, verbose=1, \
+                mode='auto', baseline=None, restore_best_weights=False))
 
             return callbacks
 
@@ -565,20 +545,13 @@ def test(cf):
 
     total_patient_name = [ id.split('.')[0] for id in test_ids]
     num_patients = len(test_patients)
-    # for i in range(len(test_patient)):
-    #     test_pateint_number = test_patient[i][test_path_length:-9]
-    #     total_patient_name.append(test_pateint_number)
 
     print(f'total_patient_name={total_patient_name}')
     print(f'test_ids={test_ids}')
     print(f'num_patients={num_patients}')
 
 
-    # total_patient_name = []
-    
-    # for i in range(len(test_patient)):
-    #     test_pateint_number = test_patient[i][44:-9]
-    #     total_patient_name.append(test_pateint_number)
+
 
     for i in range(len(test_patient)):
 
@@ -724,14 +697,6 @@ def data_preprocess(cf):
             if stop == 'n':
                 return
 
-#    if not os.path.exists(cf['Paths']['histories']):
-#        os.makedirs(cf['Paths']['histories'])
-#    else:
-#        if not cf['Training']['background_process']:
-#            stop = input('\033[93m The folder {} already exists. Do you want to overwrite it ? ([y]/n) \033[0m'.format(
-#                cf['Paths']['histories']))
-#            if stop == 'n':
-#                return
 
     print('-' * 75)
     print(' Config\n')

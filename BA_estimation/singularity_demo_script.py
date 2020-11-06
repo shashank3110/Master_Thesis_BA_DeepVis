@@ -1,7 +1,10 @@
+###########################################
+#Demo script to test singularity containers
+###########################################
 import logging
 logging.getLogger('tensorflow').disabled = True
 import tensorflow as tf
-#import  torch
+
 print('hello world')
 print(f'tf version ={tf.__version__}')
 total_gpus=tf.config.experimental.list_physical_devices('GPU')

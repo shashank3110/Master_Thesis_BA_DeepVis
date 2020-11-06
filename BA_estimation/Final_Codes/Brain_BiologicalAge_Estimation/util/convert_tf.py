@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+'''
+Parse a .tfrecord file.
+'''
 import tensorflow as tf
 
 def parse_function_image(example_proto):
