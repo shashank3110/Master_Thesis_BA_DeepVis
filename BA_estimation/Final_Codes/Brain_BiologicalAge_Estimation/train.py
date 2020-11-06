@@ -152,21 +152,17 @@ def train(cf):
 
         #Create the model with the shape of the input
         input_size = image_shape + [1]
-        #model,_ = Hybrid3DCNN_gender_age_v2.createModel(input_size)
+
         model,_ = Hybrid3DCNN_oasis.createModel(input_size)
         #Uncomment the below command in case of using multiple GPUs
-        #model = ModelMGPU(model, 2)
-        
+     
         #Defining RMSE metric
         def rmse(y_true, y_pred):
             return K.sqrt(K.mean(K.square(y_pred - y_true))) 
     
         learning_rate = cf['Training']['learning_rate']
         
-        #Uncomment below commands if using SGD optimizer
-        #sgd = optimizers.SGD(lr=0.0001,clipnorm=25.0, decay=1e-6, momentum=0.9, nesterov=True)
-        #model.compile(loss='mean_squared_error', optimizer=sgd, metrics=['mae'])
-        
+    
         print('learning rate is:',learning_rate )
         adm = optimizers.Adam(lr=learning_rate)
         model.compile(loss='mse', optimizer=adm, metrics=['mae', rmse])

@@ -33,9 +33,6 @@ from tensorflow.keras import backend as K
 K.set_image_data_format = 'channels_last'
 from tensorflow.compat.v1.keras.backend import set_session,clear_session,get_session
 
-
-
-# Import own scripts
 import util.generator_3D_volume_slices_age_with_gender as generator
 import get_train_eval_files_multiple as get_train_eval_files
 import numpy
@@ -61,7 +58,8 @@ class ModelMGPU(Model):
         self._smodel = ser_model
 
     def __getattribute__(self, attrname):
-        '''Override load and save methods to be used from the serial-model. The
+           '''
+           Override load and save methods to be used from the serial-model. The
            serial-model holds references to the weights in the multi-gpu model.
            '''
         if 'load' in attrname or 'save' in attrname:
@@ -234,8 +232,7 @@ def train(cf,exp_name):
     logging_file = cf['Paths']['model'] + "age_net_oasis1_3" + ".txt"
     checkpoint_path = cf['Paths']['model'] + "age_net_oasis1_3" + ".ckpt"
     #Start training the model
-    # tf.compat.v1.disable_eager_execution()
-    # tf2 Model.fit supports generators hence fit_generator has been deprecated
+
     history = model.fit(
           train_generator,
           steps_per_epoch=steps_per_epoch,
@@ -249,8 +246,7 @@ def train(cf,exp_name):
 #Testing on the test set
 def test(cf,exp_name):
     
-    # os.environ["CUDA_VISIBLE_DEVICES"] = str(cf['Training']['gpu_num'])
-    #test_tfrecord = cf['Paths']['test_tfrecord']
+
     batch_size = cf['Training']['batch_size']
     image_shape = cf['Training']['image_shape']
 
@@ -270,7 +266,7 @@ def test(cf,exp_name):
     else:
         
         print('no pretrained  model')
-    # test_path_length = len(test_tfrecord)
+
     # get test Patient
     test_data_path = cf['Paths']['test_tfrecord']
     test_label_path = cf['Paths']['labels']
@@ -281,7 +277,7 @@ def test(cf,exp_name):
     test_steps = math.ceil(count_test / batch_size)
 
 
-    ##new change july 19,2020
+    # for cdr classification network
     if cf['Classification'] =='Y' : 
         
         test_generator = generator.tfdata_generator_volume_chunks(file_lists=test_patients, label_lists=test_cdr,
@@ -312,9 +308,7 @@ def test(cf,exp_name):
 
     total_patient_name = [ id.split('.')[0] for id in test_ids]
     num_patients = len(test_patients)
-    # for i in range(len(test_patient)):
-    #     test_pateint_number = test_patient[i][test_path_length:-9]
-    #     total_patient_name.append(test_pateint_number)
+
 
     print(f'total_patient_name={total_patient_name}')
     print(f'test_ids={test_ids}')
@@ -332,14 +326,13 @@ def test(cf,exp_name):
     slice_min = []
     cdr_ohe_dict={0:[1.0,0.0,0.0,0.0],0.5:[0.0,1.0,0.0,0.0],1:[0.0,0.0,1.0,0.0],2:[0.0,0.0,0.0,1.0]}
     cdr_keys= list(cdr_ohe_dict.keys())
+
     if cf['Classification']=='Y':
         from scipy import stats
         learning_rate = cf['Training']['learning_rate']
         adm = optimizers.Adam(lr=learning_rate)
         cdr_prediction = prediction
-        # print(f'first prediction ={cdr_prediction[0],len(cdr_prediction),len(cdr_prediction[0])}')
-        # return
-        # model.compile(loss='mse', optimizer=adm, metrics=['mae', rmse])
+
         model.compile(loss='categorical_crossentropy', optimizer=adm, metrics=[tf.keras.metrics.AUC(),\
             'categorical_accuracy', 'accuracy'])
         classification_eval= model.evaluate(test_generator, steps=test_steps, verbose=1)
