@@ -3,8 +3,7 @@
 
 - Data Preprocessing refer:  data_preprocessing/..   <br/>  (refer the [Preprocessing_README.md](https://github.com/shashank3110/Master_Thesis_BA_DeepVis/blob/master/data_preprocessing/Preprocessing_README.md) )
 
-- CA Estimation and BA Estimation  training code refer:  BA_Estimation/
-  * Note : Pl. Refer Wenbin Shi's Thesis for up to date code for iterative training Framework.
+- CA Estimation and BA Estimation training code (had to be made private due to copyrighted data involved.)
   
 - Visualization code  colab notebooks refer: colab_notebooks/.. :
   - [colab_notebooks/ba_estimation_network_saliency_maps_gcam_gcam++_notebook.ipynb](https://github.com/shashank3110/Master_Thesis_BA_DeepVis/blob/master/colab_notebooks/ba_estimation_network_saliency_maps_gcam_gcam%2B%2B_notebook.ipynb)
