@@ -20,6 +20,6 @@
 - [4] [Smooth Grad-CAM++: An Enhanced Inference Level Visualization Technique for Deep Convolutional Neural Network Models](https://arxiv.org/abs/1908.01224)
 
 ### Brain Atlas for reference (requires flash player support enabled on browser):
-http://www.thehumanbrain.info/head_brain/horizontal.php
-http://www.thehumanbrain.info/head_brain/hn_coronal_atlas/coronal.html
-http://www.thehumanbrain.info/head_brain/hn_sagittal_atlas/sagittal.html
+- http://www.thehumanbrain.info/head_brain/horizontal.php
+- http://www.thehumanbrain.info/head_brain/hn_coronal_atlas/coronal.html
+- http://www.thehumanbrain.info/head_brain/hn_sagittal_atlas/sagittal.html
